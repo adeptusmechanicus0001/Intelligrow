@@ -1,0 +1,72 @@
+the code used for Esp32 is given below:-
+
+esphome:
+  name: sensors
+  friendly_name: sensors
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "R6BFAaePGFh5MgZ7Wvm0+ymXBiVMNGvu2XkRznyNFAY="
+
+ota:
+  password: "c6d1b826df1b9b1a0048ad496474ed71"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Sensors Fallback Hotspot"
+    password: "poAYABAsPccB"
+
+captive_portal:
+
+sensor:
+  - platform: dht
+    pin: GPIO13
+    temperature:
+      name: "Ambient Temperature"
+    humidity:
+      name: "Ambient Humidity"
+    update_interval: 60s
+
+  - platform: adc
+    pin: GPIO34
+    name: "Soil Moisture"
+    update_interval: 60s
+
+  - platform: adc
+    pin: GPIO35
+    id: horti3_ph
+    name: "Soil pH"
+    update_interval: 60s
+    unit_of_measurement: pH
+    filters:
+      - median:
+          window_size: 7
+          send_every: 4
+          send_first_at: 3
+      - lambda: |-
+           ESP_LOGD("ph", "volatge=%fv", x);
+           return x;
+      - calibrate_linear:
+          - 0.79 -> 7.0
+          - 0.93 -> 4.0
+      - lambda: |-
+           ESP_LOGD("ph", "read=%fpH", x);
+           return x;
+
+  - platform: adc
+    pin: GPIO36
+    name: "Soil Moisture"
+    update_interval: 60s
